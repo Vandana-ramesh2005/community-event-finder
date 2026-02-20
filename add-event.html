@@ -19,7 +19,7 @@
             <h2>EventFinder</h2>
         </div>
         <div class="nav-actions">
-            <a href="index.html" class="btn btn-outline">← Back</a>
+            <a href="/" class="btn btn-outline">← Back</a>
         </div>
     </nav>
 
@@ -112,7 +112,7 @@
                 <input type="hidden" id="hiddenLng" name="lng">
 
                 <div class="submit-row">
-                    <a href="index.html" class="btn btn-outline">Cancel</a>
+                    <a href="/" class="btn btn-outline">Cancel</a>
                     <button type="submit" class="btn" id="submitBtn">🚀 Submit Event</button>
                 </div>
             </form>
@@ -210,7 +210,7 @@
             btn.textContent = '⏳ Submitting…';
 
             try {
-                const res = await fetch('http://localhost:3000/add-event', {
+                const res = await fetch('/add-event', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -221,7 +221,7 @@
                     showToast('✅ ' + data.message, 'success');
                     btn.textContent = '✅ Event Added!';
                     btn.style.background = 'linear-gradient(135deg, #34d399, #059669)';
-                    setTimeout(() => window.location.href = 'index.html', 1800);
+                    setTimeout(() => window.location.href = '/', 1800);
                 } else {
                     showToast('❌ ' + (data.message || 'Submission failed.'), 'error');
                     btn.disabled = false;

@@ -23,16 +23,21 @@ Response shape per event:
 
 import sqlite3
 import math
+from datetime import datetime
 import os
 from flask import Flask, request, jsonify, g
 from flask_cors import CORS
 
 # ── App setup ────────────────────────────────────────────────────────────────
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH  = os.path.join(BASE_DIR, "events.db")
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.dirname(BASE_DIR)          # project root with HTML/CSS
+DB_PATH    = os.path.join(BASE_DIR, "events.db")
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
-CORS(app)   # allow browser fetch from index.html opened as a file
+app = Flask(__name__,
+            static_folder=PARENT_DIR,
+            static_url_path="",
+            template_folder=PARENT_DIR)
+CORS(app)   # keep CORS in case someone still opens HTML as a local file
 
 
 # ── Database helpers ─────────────────────────────────────────────────────────
@@ -131,8 +136,14 @@ def row_to_dict(row: sqlite3.Row, user_lat=None, user_lng=None) -> dict:
 
 @app.route("/")
 def home():
-    """Minimal health-check / landing."""
-    return jsonify({"status": "ok", "message": "Community Event Finder API is running."})
+    """Serve the main index page."""
+    return app.send_static_file("index.html")
+
+
+@app.route("/add-event-page")
+def add_event_page():
+    """Serve the add-event form page."""
+    return app.send_static_file("add-event.html")
 
 
 @app.route("/events", methods=["GET"])
@@ -235,14 +246,27 @@ def add_event():
     paid  = bool(data.get("paid", False))
     price = float(data.get("price", 0)) if paid else 0.0
 
+    # Normalise date & time coming from HTML <input type="date"> / <input type="time">
+    # so they match the human-readable format used by seed data.
+    raw_date = data["date"].strip()
+    raw_time = data["time"].strip()
+    try:
+        nice_date = datetime.strptime(raw_date, "%Y-%m-%d").strftime("%B %d, %Y")
+    except ValueError:
+        nice_date = raw_date          # already in readable format — keep as-is
+    try:
+        nice_time = datetime.strptime(raw_time, "%H:%M").strftime("%I:%M %p").lstrip("0")
+    except ValueError:
+        nice_time = raw_time
+
     db  = get_db()
     cur = db.execute("""
         INSERT INTO events (name, date, time, category, district, place, description, lat, lng, paid, price)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         data["name"].strip(),
-        data["date"].strip(),
-        data["time"].strip(),
+        nice_date,
+        nice_time,
         data["category"].strip(),
         data.get("district", "").strip(),
         data.get("place", "").strip(),
