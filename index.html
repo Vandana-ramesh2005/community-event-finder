@@ -1,34 +1,297 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Event Finder</title>
+    <meta name="description" content="Discover local events near you — search by location and filter by distance.">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
+    <!-- NAVBAR -->
     <nav>
-        <h2>🌍 Community Event Finder</h2>
-        <a href="add-event.html" class="btn">+ Add Event</a>
+        <div class="nav-brand">
+            <div class="logo-icon">🌍</div>
+            <h2>EventFinder</h2>
+        </div>
+        <div class="nav-actions">
+            <a href="add-event.html" class="btn">+ Add Event</a>
+        </div>
     </nav>
 
+    <!-- HERO -->
+    <section class="hero">
+        <h1>Discover Events<br>Near You</h1>
+        <p>Type any place in Kerala, pick a radius, and find events happening nearby.</p>
+
+        <!-- Location Search -->
+        <div class="location-search-bar">
+            <span class="search-icon">📍</span>
+            <input type="text" id="locationInput" placeholder="Type a place… e.g. Kochi, Thrissur" autocomplete="off">
+            <button class="btn" id="searchBtn" onclick="searchEvents()">Search</button>
+        </div>
+        <p class="geo-hint">or <button class="link-btn" onclick="useMyLocation()">📡 Use my current location</button>
+        </p>
+
+        <!-- Distance Filter Chips -->
+        <div class="filter-chips" id="distanceChips">
+            <span class="chip-label">Within:</span>
+            <button class="chip active" onclick="setRadius(0,   this)">Any distance</button>
+            <button class="chip" onclick="setRadius(5,   this)">5 km</button>
+            <button class="chip" onclick="setRadius(10,  this)">10 km</button>
+            <button class="chip" onclick="setRadius(25,  this)">25 km</button>
+            <button class="chip" onclick="setRadius(50,  this)">50 km</button>
+        </div>
+    </section>
+
+    <!-- SECONDARY FILTERS -->
     <div class="container">
-        <h3>Upcoming Events</h3>
-
-        <div class="event-card">
-            <h4>Music Fest 2026</h4>
-            <p>Date: 25 Feb 2026</p>
-            <p>Time: 6:00 PM</p>
-            <p>Category: Music</p>
+        <div class="secondary-filters">
+            <div class="filter-group">
+                <label>District</label>
+                <select id="districtFilter" onchange="populatePlaces(); fetchEvents()">
+                    <option value="">All Districts</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Place</label>
+                <select id="placeFilter" onchange="fetchEvents()">
+                    <option value="">All Places</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Category</label>
+                <select id="categoryFilter" onchange="fetchEvents()">
+                    <option value="">All Categories</option>
+                    <option>Music</option>
+                    <option>Tech</option>
+                    <option>Sports</option>
+                    <option>Art</option>
+                    <option>Dance</option>
+                </select>
+            </div>
         </div>
 
-        <div class="event-card">
-            <h4>Tech Meetup</h4>
-            <p>Date: 28 Feb 2026</p>
-            <p>Time: 4:00 PM</p>
-            <p>Category: Tech</p>
+        <!-- Results Header -->
+        <div class="section-header">
+            <h3>Events</h3>
+            <span id="event-count">Loading…</span>
         </div>
 
+        <!-- Status Messages -->
+        <div id="statusMsg" class="status-msg" style="display:none;"></div>
+
+        <!-- Event Grid -->
+        <div class="event-grid" id="eventGrid"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display:none;">
+            <div class="empty-icon">🔎</div>
+            <h4>No events found</h4>
+            <p>Try a different location, larger radius, or different filters.</p>
+        </div>
     </div>
 
+    <script>
+        // ── Kerala Districts ───────────────────────────────────────────────────────────
+        const keralaDistricts = {
+            "Thiruvananthapuram": ["Thiruvananthapuram City", "Neyyattinkara", "Kattakada"],
+            "Kollam": ["Kollam City", "Karunagappally", "Kunnathur"],
+            "Pathanamthitta": ["Pathanamthitta Town", "Adoor", "Kozhencherry"],
+            "Alappuzha": ["Alappuzha City", "Cherthala", "Chengannur"],
+            "Kottayam": ["Kottayam City", "Pala", "Vaikom"],
+            "Idukki": ["Painavu", "Thodupuzha", "Munnar"],
+            "Ernakulam": ["Kochi", "Aluva", "Muvattupuzha"],
+            "Thrissur": ["Thrissur City", "Guruvayur", "Chalakudy"],
+            "Palakkad": ["Palakkad City", "Ottapalam", "Chittur"],
+            "Malappuram": ["Malappuram City", "Tirur", "Perinthalmanna"],
+            "Kozhikode": ["Kozhikode City", "Vatakara", "Thamarassery"],
+            "Wayanad": ["Kalpetta", "Sulthan Bathery", "Mananthavady"],
+            "Kannur": ["Kannur City", "Taliparamba", "Payyanur"],
+            "Kasaragod": ["Kasaragod City", "Kanhangad", "Nileshwar"]
+        };
+
+        // Populate district dropdown
+        const distSel = document.getElementById('districtFilter');
+        Object.keys(keralaDistricts).sort().forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = opt.textContent = d;
+            distSel.appendChild(opt);
+        });
+
+        function populatePlaces() {
+            const pSel = document.getElementById('placeFilter');
+            const d = document.getElementById('districtFilter').value;
+            pSel.innerHTML = '<option value="">All Places</option>';
+            if (d && keralaDistricts[d]) {
+                keralaDistricts[d].forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = opt.textContent = p;
+                    pSel.appendChild(opt);
+                });
+            }
+        }
+
+        // ── State ──────────────────────────────────────────────────────────────────────
+        let userLat = null, userLng = null, activeRadius = 0;
+        const API = 'http://localhost:3000';
+
+        // ── Distance chip logic ────────────────────────────────────────────────────────
+        function setRadius(r, el) {
+            activeRadius = r;
+            document.querySelectorAll('#distanceChips .chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            fetchEvents();
+        }
+
+        // ── Geocode typed location via Nominatim ───────────────────────────────────────
+        async function searchEvents() {
+            const query = document.getElementById('locationInput').value.trim();
+            if (!query) { showStatus('⚠️ Please type a location first.', 'warn'); return; }
+
+            showStatus('🔍 Searching for "' + query + '"…', 'info');
+            document.getElementById('searchBtn').disabled = true;
+
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ', Kerala, India')}&format=json&limit=1`;
+                const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+                const data = await res.json();
+
+                if (!data.length) {
+                    showStatus('❌ Location not found. Try a more specific name.', 'error');
+                    return;
+                }
+
+                userLat = parseFloat(data[0].lat);
+                userLng = parseFloat(data[0].lon);
+                showStatus(`📍 Found: ${data[0].display_name.split(',').slice(0, 2).join(',')}`, 'success');
+                await fetchEvents();
+            } catch (err) {
+                showStatus('❌ Network error. Make sure you are online.', 'error');
+            } finally {
+                document.getElementById('searchBtn').disabled = false;
+            }
+        }
+
+        // ── Use browser geolocation ────────────────────────────────────────────────────
+        function useMyLocation() {
+            if (!navigator.geolocation) { showStatus('❌ Geolocation not supported by your browser.', 'error'); return; }
+            showStatus('📡 Getting your location…', 'info');
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    userLat = pos.coords.latitude;
+                    userLng = pos.coords.longitude;
+                    document.getElementById('locationInput').value = `${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+                    showStatus('📍 Using your current location', 'success');
+                    fetchEvents();
+                },
+                () => showStatus('❌ Could not access your location. Check browser permissions.', 'error')
+            );
+        }
+
+        // ── Fetch events from backend ──────────────────────────────────────────────────
+        async function fetchEvents() {
+            const grid = document.getElementById('eventGrid');
+            grid.innerHTML = '<div class="loading-spinner">⏳ Loading events…</div>';
+            document.getElementById('emptyState').style.display = 'none';
+
+            const params = new URLSearchParams();
+            if (userLat !== null) { params.set('lat', userLat); params.set('lng', userLng); }
+            if (activeRadius > 0) params.set('radius', activeRadius);
+
+            const district = document.getElementById('districtFilter').value;
+            const place = document.getElementById('placeFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+            if (district) params.set('district', district);
+            if (place) params.set('place', place);
+            if (category) params.set('category', category);
+
+            try {
+                const res = await fetch(`${API}/events?${params.toString()}`);
+                const events = await res.json();
+                renderCards(events);
+            } catch {
+                grid.innerHTML = '';
+                showStatus('⚠️ Could not connect to the backend. Is the Flask server running on port 3000?', 'error');
+                document.getElementById('event-count').textContent = '0 events';
+            }
+        }
+
+        // ── Render event cards ─────────────────────────────────────────────────────────
+        const CAT_ICONS = { Music: '🎵', Tech: '💻', Sports: '⚽', Art: '🎨', Dance: '💃' };
+        const CAT_COLORS = { Music: 'cat-music', Tech: 'cat-tech', Sports: 'cat-sports', Art: 'cat-art', Dance: 'cat-dance' };
+
+        function renderCards(events) {
+            const grid = document.getElementById('eventGrid');
+            document.getElementById('event-count').textContent =
+                events.length + ' event' + (events.length !== 1 ? 's' : '');
+
+            if (!events.length) {
+                grid.innerHTML = '';
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('emptyState').style.display = 'none';
+            grid.innerHTML = events.map(ev => {
+                const icon = CAT_ICONS[ev.category] || '📌';
+                const catClass = CAT_COLORS[ev.category] || 'cat-default';
+                const distBadge = ev.distance_km !== null
+                    ? `<span class="distance-badge">📍 ${ev.distance_km} km away</span>`
+                    : '';
+                const priceBadge = ev.paid
+                    ? `<span class="price-badge paid">₹${ev.price}</span>`
+                    : `<span class="price-badge free">Free</span>`;
+
+                return `
+        <div class="event-card" data-id="${ev.id}">
+            <div class="card-top-row">
+                <div class="card-category ${catClass}">${icon} ${ev.category}</div>
+                ${priceBadge}
+            </div>
+            <h4>${ev.name}</h4>
+            <div class="event-meta">
+                <div class="meta-item"><span class="icon">📅</span> ${ev.date}</div>
+                <div class="meta-item"><span class="icon">🕐</span> ${ev.time}</div>
+                <div class="meta-item"><span class="icon">🗺️</span> ${ev.place}${ev.district ? ', ' + ev.district : ''}</div>
+            </div>
+            <div class="card-footer">
+                <button class="interested-btn" onclick="toggleInterest(this)">⭐ Interested</button>
+                ${distBadge}
+            </div>
+        </div>`;
+            }).join('');
+        }
+
+        // ── Interested toggle ──────────────────────────────────────────────────────────
+        function toggleInterest(btn) {
+            const going = btn.classList.toggle('active-interest');
+            btn.textContent = going ? '✅ Going!' : '⭐ Interested';
+            btn.style.borderColor = going ? '#6c63ff' : '';
+            btn.style.color = going ? '#a29af7' : '';
+        }
+
+        // ── Status helper ──────────────────────────────────────────────────────────────
+        function showStatus(msg, type) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.className = 'status-msg status-' + type;
+            el.style.display = 'block';
+            if (type === 'success') setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        // ── Init: load all events on page load ────────────────────────────────────────
+        window.addEventListener('DOMContentLoaded', fetchEvents);
+
+        // Search on Enter key
+        document.getElementById('locationInput')?.addEventListener('keydown', e => {
+            if (e.key === 'Enter') searchEvents();
+        });
+    </script>
+
 </body>
+
 </html>
