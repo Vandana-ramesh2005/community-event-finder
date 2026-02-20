@@ -7,11 +7,14 @@
     <title>Community Event Finder</title>
     <meta name="description" content="Discover local events near you — search by location and filter by distance.">
     <link rel="stylesheet" href="style.css">
+    <!-- Leaflet for the event-location map drawer -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 
 <body>
 
-    <!-- NAVBAR -->
+    <!-- ══ NAVBAR ═══════════════════════════════════════════════════════════════ -->
     <nav>
         <div class="nav-brand">
             <div class="logo-icon">🌍</div>
@@ -22,12 +25,11 @@
         </div>
     </nav>
 
-    <!-- HERO -->
+    <!-- ══ HERO ══════════════════════════════════════════════════════════════════ -->
     <section class="hero">
         <h1>Discover Events<br>Near You</h1>
         <p>Type any place in Kerala, pick a radius, and find events happening nearby.</p>
 
-        <!-- Location Search -->
         <div class="location-search-bar">
             <span class="search-icon">📍</span>
             <input type="text" id="locationInput" placeholder="Type a place… e.g. Kochi, Thrissur" autocomplete="off">
@@ -36,18 +38,17 @@
         <p class="geo-hint">or <button class="link-btn" onclick="useMyLocation()">📡 Use my current location</button>
         </p>
 
-        <!-- Distance Filter Chips -->
         <div class="filter-chips" id="distanceChips">
             <span class="chip-label">Within:</span>
-            <button class="chip active" onclick="setRadius(0,   this)">Any distance</button>
-            <button class="chip" onclick="setRadius(5,   this)">5 km</button>
-            <button class="chip" onclick="setRadius(10,  this)">10 km</button>
-            <button class="chip" onclick="setRadius(25,  this)">25 km</button>
-            <button class="chip" onclick="setRadius(50,  this)">50 km</button>
+            <button class="chip active" onclick="setRadius(0,  this)">Any distance</button>
+            <button class="chip" onclick="setRadius(5,  this)">5 km</button>
+            <button class="chip" onclick="setRadius(10, this)">10 km</button>
+            <button class="chip" onclick="setRadius(25, this)">25 km</button>
+            <button class="chip" onclick="setRadius(50, this)">50 km</button>
         </div>
     </section>
 
-    <!-- SECONDARY FILTERS -->
+    <!-- ══ SECONDARY FILTERS ════════════════════════════════════════════════════ -->
     <div class="container">
         <div class="secondary-filters">
             <div class="filter-group">
@@ -75,19 +76,14 @@
             </div>
         </div>
 
-        <!-- Results Header -->
         <div class="section-header">
             <h3>Events</h3>
             <span id="event-count">Loading…</span>
         </div>
 
-        <!-- Status Messages -->
         <div id="statusMsg" class="status-msg" style="display:none;"></div>
-
-        <!-- Event Grid -->
         <div class="event-grid" id="eventGrid"></div>
 
-        <!-- Empty State -->
         <div class="empty-state" id="emptyState" style="display:none;">
             <div class="empty-icon">🔎</div>
             <h4>No events found</h4>
@@ -95,8 +91,42 @@
         </div>
     </div>
 
+    <!-- ══ MAP DRAWER ════════════════════════════════════════════════════════════
+     Slides up from the bottom when user clicks "Interested" on an event.
+     Shows the event's venue pinned on a Leaflet map.
+-->
+    <div id="mapDrawer" class="map-drawer" aria-hidden="true">
+        <div class="drawer-handle" onclick="closeMapDrawer()"></div>
+
+        <div class="drawer-header">
+            <div class="drawer-event-info">
+                <span id="drawerCatBadge" class="card-category"></span>
+                <div>
+                    <h3 id="drawerTitle"></h3>
+                    <p id="drawerMeta" class="drawer-meta"></p>
+                </div>
+            </div>
+            <button class="drawer-close" onclick="closeMapDrawer()" aria-label="Close map">✕</button>
+        </div>
+
+        <div id="drawerMap"></div>
+
+        <div class="drawer-actions">
+            <a id="mapDirectionsBtn" href="#" target="_blank" class="btn" rel="noopener noreferrer">
+                🗺️ Open in Google Maps
+            </a>
+            <button id="drawerInterestBtn" class="btn btn-outline" onclick="confirmInterest()">
+                ⭐ Mark as Going
+            </button>
+        </div>
+    </div>
+
+    <!-- Backdrop -->
+    <div id="mapBackdrop" class="map-backdrop" onclick="closeMapDrawer()"></div>
+
+
     <script>
-        // ── Kerala Districts ───────────────────────────────────────────────────────────
+        // ── Kerala Districts ──────────────────────────────────────────────────────────
         const keralaDistricts = {
             "Thiruvananthapuram": ["Thiruvananthapuram City", "Neyyattinkara", "Kattakada"],
             "Kollam": ["Kollam City", "Karunagappally", "Kunnathur"],
@@ -114,7 +144,6 @@
             "Kasaragod": ["Kasaragod City", "Kanhangad", "Nileshwar"]
         };
 
-        // Populate district dropdown
         const distSel = document.getElementById('districtFilter');
         Object.keys(keralaDistricts).sort().forEach(d => {
             const opt = document.createElement('option');
@@ -135,11 +164,11 @@
             }
         }
 
-        // ── State ──────────────────────────────────────────────────────────────────────
+        // ── State ─────────────────────────────────────────────────────────────────────
         let userLat = null, userLng = null, activeRadius = 0;
         const API = 'http://localhost:3000';
 
-        // ── Distance chip logic ────────────────────────────────────────────────────────
+        // ── Distance chips ────────────────────────────────────────────────────────────
         function setRadius(r, el) {
             activeRadius = r;
             document.querySelectorAll('#distanceChips .chip').forEach(c => c.classList.remove('active'));
@@ -147,7 +176,7 @@
             fetchEvents();
         }
 
-        // ── Geocode typed location via Nominatim ───────────────────────────────────────
+        // ── Nominatim geocoding ───────────────────────────────────────────────────────
         async function searchEvents() {
             const query = document.getElementById('locationInput').value.trim();
             if (!query) { showStatus('⚠️ Please type a location first.', 'warn'); return; }
@@ -160,39 +189,36 @@
                 const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
                 const data = await res.json();
 
-                if (!data.length) {
-                    showStatus('❌ Location not found. Try a more specific name.', 'error');
-                    return;
-                }
+                if (!data.length) { showStatus('❌ Location not found. Try a more specific name.', 'error'); return; }
 
                 userLat = parseFloat(data[0].lat);
                 userLng = parseFloat(data[0].lon);
-                showStatus(`📍 Found: ${data[0].display_name.split(',').slice(0, 2).join(',')}`, 'success');
+                showStatus('📍 Found: ' + data[0].display_name.split(',').slice(0, 2).join(','), 'success');
                 await fetchEvents();
-            } catch (err) {
+            } catch {
                 showStatus('❌ Network error. Make sure you are online.', 'error');
             } finally {
                 document.getElementById('searchBtn').disabled = false;
             }
         }
 
-        // ── Use browser geolocation ────────────────────────────────────────────────────
+        // ── Browser geolocation ───────────────────────────────────────────────────────
         function useMyLocation() {
-            if (!navigator.geolocation) { showStatus('❌ Geolocation not supported by your browser.', 'error'); return; }
+            if (!navigator.geolocation) { showStatus('❌ Geolocation not supported.', 'error'); return; }
             showStatus('📡 Getting your location…', 'info');
             navigator.geolocation.getCurrentPosition(
                 pos => {
                     userLat = pos.coords.latitude;
                     userLng = pos.coords.longitude;
-                    document.getElementById('locationInput').value = `${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+                    document.getElementById('locationInput').value = userLat.toFixed(4) + ', ' + userLng.toFixed(4);
                     showStatus('📍 Using your current location', 'success');
                     fetchEvents();
                 },
-                () => showStatus('❌ Could not access your location. Check browser permissions.', 'error')
+                () => showStatus('❌ Could not access your location.', 'error')
             );
         }
 
-        // ── Fetch events from backend ──────────────────────────────────────────────────
+        // ── Fetch events ──────────────────────────────────────────────────────────────
         async function fetchEvents() {
             const grid = document.getElementById('eventGrid');
             grid.innerHTML = '<div class="loading-spinner">⏳ Loading events…</div>';
@@ -215,12 +241,12 @@
                 renderCards(events);
             } catch {
                 grid.innerHTML = '';
-                showStatus('⚠️ Could not connect to the backend. Is the Flask server running on port 3000?', 'error');
+                showStatus('⚠️ Could not connect to the backend. Is Flask running on port 3000?', 'error');
                 document.getElementById('event-count').textContent = '0 events';
             }
         }
 
-        // ── Render event cards ─────────────────────────────────────────────────────────
+        // ── Render cards ──────────────────────────────────────────────────────────────
         const CAT_ICONS = { Music: '🎵', Tech: '💻', Sports: '⚽', Art: '🎨', Dance: '💃' };
         const CAT_COLORS = { Music: 'cat-music', Tech: 'cat-tech', Sports: 'cat-sports', Art: 'cat-art', Dance: 'cat-dance' };
 
@@ -240,14 +266,21 @@
                 const icon = CAT_ICONS[ev.category] || '📌';
                 const catClass = CAT_COLORS[ev.category] || 'cat-default';
                 const distBadge = ev.distance_km !== null
-                    ? `<span class="distance-badge">📍 ${ev.distance_km} km away</span>`
-                    : '';
+                    ? `<span class="distance-badge">📍 ${ev.distance_km} km away</span>` : '';
                 const priceBadge = ev.paid
                     ? `<span class="price-badge paid">₹${ev.price}</span>`
                     : `<span class="price-badge free">Free</span>`;
 
+                /* Embed event data in data-* attributes so the map drawer can read them */
                 return `
-        <div class="event-card" data-id="${ev.id}">
+        <div class="event-card" data-id="${ev.id}"
+             data-lat="${ev.lat}" data-lng="${ev.lng}"
+             data-name="${ev.name.replace(/"/g, '&quot;')}"
+             data-place="${(ev.place + (ev.district ? ', ' + ev.district : '')).replace(/"/g, '&quot;')}"
+             data-date="${ev.date}" data-time="${ev.time}"
+             data-category="${ev.category}" data-cat-class="${catClass}" data-icon="${icon}"
+             data-paid="${ev.paid}" data-price="${ev.price}">
+
             <div class="card-top-row">
                 <div class="card-category ${catClass}">${icon} ${ev.category}</div>
                 ${priceBadge}
@@ -259,22 +292,133 @@
                 <div class="meta-item"><span class="icon">🗺️</span> ${ev.place}${ev.district ? ', ' + ev.district : ''}</div>
             </div>
             <div class="card-footer">
-                <button class="interested-btn" onclick="toggleInterest(this)">⭐ Interested</button>
+                <button class="interested-btn" onclick="openMapDrawer(this)">⭐ Interested</button>
                 ${distBadge}
             </div>
         </div>`;
             }).join('');
         }
 
-        // ── Interested toggle ──────────────────────────────────────────────────────────
-        function toggleInterest(btn) {
-            const going = btn.classList.toggle('active-interest');
-            btn.textContent = going ? '✅ Going!' : '⭐ Interested';
-            btn.style.borderColor = going ? '#6c63ff' : '';
-            btn.style.color = going ? '#a29af7' : '';
+        // ── Map Drawer ────────────────────────────────────────────────────────────────
+        let drawerMap = null;   // Leaflet instance
+        let drawerMarker = null;
+        let activeCard = null;   // the card whose Interested btn was clicked
+
+        const CAT_ICON_MAP = {
+            Music: '🎵', Tech: '💻', Sports: '⚽', Art: '🎨', Dance: '💃'
+        };
+
+        function openMapDrawer(btn) {
+            const card = btn.closest('.event-card');
+            activeCard = card;
+
+            const lat = parseFloat(card.dataset.lat);
+            const lng = parseFloat(card.dataset.lng);
+            const name = card.dataset.name;
+            const place = card.dataset.place;
+            const date = card.dataset.date;
+            const time = card.dataset.time;
+            const category = card.dataset.category;
+            const catClass = card.dataset.catClass;
+            const icon = card.dataset.icon;
+
+            // Populate drawer header
+            document.getElementById('drawerTitle').textContent = name;
+            document.getElementById('drawerMeta').textContent = date + ' · ' + time + ' · ' + place;
+
+            const catBadge = document.getElementById('drawerCatBadge');
+            catBadge.textContent = icon + ' ' + category;
+            catBadge.className = 'card-category ' + catClass;
+
+            // Google Maps directions link
+            document.getElementById('mapDirectionsBtn').href =
+                `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+            // Show drawer + backdrop
+            document.getElementById('mapDrawer').classList.add('open');
+            document.getElementById('mapBackdrop').classList.add('visible');
+            document.body.style.overflow = 'hidden';
+
+            // Init or update Leaflet map
+            if (!drawerMap) {
+                drawerMap = L.map('drawerMap', { zoomControl: true }).setView([lat, lng], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                }).addTo(drawerMap);
+            } else {
+                drawerMap.setView([lat, lng], 14);
+                if (drawerMarker) drawerMap.removeLayer(drawerMarker);
+            }
+
+            // Custom pulsing marker icon
+            const pulseIcon = L.divIcon({
+                className: '',
+                html: `<div class="pulse-marker">
+                   <div class="pulse-ring"></div>
+                   <div class="pulse-dot">${icon}</div>
+               </div>`,
+                iconSize: [48, 48],
+                iconAnchor: [24, 24],
+                popupAnchor: [0, -28]
+            });
+
+            drawerMarker = L.marker([lat, lng], { icon: pulseIcon })
+                .addTo(drawerMap)
+                .bindPopup(`<strong>${name}</strong><br>${place}<br>${date} · ${time}`)
+                .openPopup();
+
+            // Fix Leaflet tile sizing after drawer animation
+            setTimeout(() => drawerMap.invalidateSize(), 350);
         }
 
-        // ── Status helper ──────────────────────────────────────────────────────────────
+        function closeMapDrawer() {
+            document.getElementById('mapDrawer').classList.remove('open');
+            document.getElementById('mapBackdrop').classList.remove('visible');
+            document.body.style.overflow = '';
+            activeCard = null;
+        }
+
+        // "Mark as Going" inside the drawer — updates the card button too
+        function confirmInterest() {
+            const btn = document.getElementById('drawerInterestBtn');
+            const going = btn.classList.toggle('confirmed');
+
+            if (going) {
+                btn.textContent = '✅ You\'re Going!';
+                btn.style.background = 'linear-gradient(135deg,#34d399,#059669)';
+                btn.style.boxShadow = '0 4px 15px rgba(52,211,153,0.45)';
+                btn.style.color = 'white';
+                btn.style.border = 'none';
+
+                // Mirror on the card's interested button
+                if (activeCard) {
+                    const cardBtn = activeCard.querySelector('.interested-btn');
+                    if (cardBtn) {
+                        cardBtn.textContent = '✅ Going!';
+                        cardBtn.classList.add('active-interest');
+                        cardBtn.style.borderColor = '#6c63ff';
+                        cardBtn.style.color = '#a29af7';
+                    }
+                }
+            } else {
+                btn.textContent = '⭐ Mark as Going';
+                btn.style.cssText = '';
+                if (activeCard) {
+                    const cardBtn = activeCard.querySelector('.interested-btn');
+                    if (cardBtn) {
+                        cardBtn.textContent = '⭐ Interested';
+                        cardBtn.classList.remove('active-interest');
+                        cardBtn.style.borderColor = '';
+                        cardBtn.style.color = '';
+                    }
+                }
+            }
+        }
+
+        // Close drawer on Escape key
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMapDrawer(); });
+
+        // ── Status helper ─────────────────────────────────────────────────────────────
         function showStatus(msg, type) {
             const el = document.getElementById('statusMsg');
             el.textContent = msg;
@@ -283,10 +427,8 @@
             if (type === 'success') setTimeout(() => el.style.display = 'none', 3000);
         }
 
-        // ── Init: load all events on page load ────────────────────────────────────────
+        // ── Init ──────────────────────────────────────────────────────────────────────
         window.addEventListener('DOMContentLoaded', fetchEvents);
-
-        // Search on Enter key
         document.getElementById('locationInput')?.addEventListener('keydown', e => {
             if (e.key === 'Enter') searchEvents();
         });

@@ -757,3 +757,229 @@ textarea {
         grid-template-columns: 1fr;
     }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   MAP DRAWER — slides up from the bottom when "Interested" is clicked
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Dark semi-transparent backdrop */
+.map-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 190;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.map-backdrop.visible {
+    display: block;
+    opacity: 1;
+}
+
+/* Drawer panel */
+.map-drawer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 75vh;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-radius: 24px 24px 0 0;
+    z-index: 200;
+    transform: translateY(100%);
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6), 0 0 40px rgba(108, 99, 255, 0.1);
+}
+
+.map-drawer.open {
+    transform: translateY(0);
+}
+
+/* Drag handle */
+.drawer-handle {
+    width: 44px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    margin: 14px auto 4px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.drawer-handle:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Drawer header row */
+.drawer-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 22px 14px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.drawer-event-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.drawer-event-info h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.drawer-meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.drawer-close {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+
+.drawer-close:hover {
+    background: rgba(246, 79, 89, 0.15);
+    color: #fca5a5;
+    border-color: rgba(246, 79, 89, 0.3);
+}
+
+/* Leaflet map inside the drawer */
+#drawerMap {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+}
+
+/* Override Leaflet popup to match theme */
+.leaflet-popup-content-wrapper {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+    border-radius: 12px !important;
+}
+
+.leaflet-popup-tip {
+    background: var(--bg-card) !important;
+}
+
+.leaflet-popup-content {
+    margin: 12px 16px !important;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+}
+
+.leaflet-popup-content strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* Drawer action buttons row */
+.drawer-actions {
+    display: flex;
+    gap: 12px;
+    padding: 14px 22px 20px;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+    flex-wrap: wrap;
+}
+
+.drawer-actions .btn {
+    flex: 1;
+    justify-content: center;
+}
+
+/* ── PULSING MARKER ─────────────────────────────────────────────── */
+.pulse-marker {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pulse-dot {
+    position: relative;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    background: var(--accent-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.pulse-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(108, 99, 255, 0.3);
+    animation: pulseRing 1.6s ease-out infinite;
+}
+
+@keyframes pulseRing {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1.9);
+        opacity: 0;
+    }
+}
+
+/* ── RESPONSIVE (drawer) ────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .map-drawer {
+        height: 88vh;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .drawer-header {
+        padding: 10px 16px 12px;
+    }
+
+    .drawer-actions {
+        padding: 12px 16px 16px;
+    }
+}
