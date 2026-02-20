@@ -23,6 +23,7 @@ Response shape per event:
 
 import sqlite3
 import math
+import hashlib
 from datetime import datetime
 import os
 from flask import Flask, request, jsonify, g
@@ -78,6 +79,15 @@ def init_db():
             lng         REAL    NOT NULL,
             paid        INTEGER DEFAULT 0,   -- 0 = free, 1 = paid
             price       REAL    DEFAULT 0
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            name     TEXT    NOT NULL,
+            email    TEXT    NOT NULL UNIQUE,
+            password TEXT    NOT NULL
         )
     """)
 
@@ -144,6 +154,72 @@ def home():
 def add_event_page():
     """Serve the add-event form page."""
     return app.send_static_file("add-event.html")
+
+
+@app.route("/login-page")
+def login_page():
+    """Serve the login/register page."""
+    return app.send_static_file("login.html")
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    """POST /login — authenticate a user."""
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"message": "Request body must be JSON"}), 400
+
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password", "")
+
+    if not email or not password:
+        return jsonify({"message": "Email and password are required."}), 400
+
+    hashed = hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+    db = get_db()
+    user = db.execute(
+        "SELECT * FROM users WHERE email = ? AND password = ?",
+        (email, hashed)
+    ).fetchone()
+
+    if user is None:
+        return jsonify({"message": "Invalid email or password."}), 401
+
+    return jsonify({"message": f"Welcome back, {user['name']}!", "user_id": user["id"]})
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    """POST /register — create a new user account."""
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"message": "Request body must be JSON"}), 400
+
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password", "")
+
+    if not name or not email or not password:
+        return jsonify({"message": "Name, email, and password are required."}), 400
+
+    if len(password) < 6:
+        return jsonify({"message": "Password must be at least 6 characters."}), 400
+
+    hashed = hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+    db = get_db()
+    # Check if email already exists
+    existing = db.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
+    if existing:
+        return jsonify({"message": "An account with this email already exists."}), 409
+
+    db.execute(
+        "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+        (name, email, hashed)
+    )
+    db.commit()
+    return jsonify({"message": "Account created successfully! Please sign in."}), 201
 
 
 @app.route("/events", methods=["GET"])
