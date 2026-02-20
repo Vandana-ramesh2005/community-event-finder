@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Event</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+
+<nav>
+    <h2>Add New Event</h2>
+    <a href="index.html" class="btn">Back</a>
+</nav>
+
+<div class="container">
+
+    <form>
+        <input type="text" placeholder="Event Title" required>
+
+        <input type="date" required>
+
+        <input type="time" required>
+
+        <select required>
+            <option value="">Select Category</option>
+            <option>Music</option>
+            <option>Art</option>
+            <option>Dance</option>
+            <option>Tech</option>
+            <option>Sports</option>
+        </select>
+
+        <h4>Select Location on Map</h4>
+        <div id="map"></div>
+
+        <button type="submit" class="btn">Submit Event</button>
+    </form>
+
+</div>
+
+<script>
+    var map = L.map('map').setView([20.5937, 78.9629], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    var marker;
+
+    map.on('click', function(e) {
+        if(marker){
+            map.removeLayer(marker);
+        }
+        marker = L.marker(e.latlng).addTo(map);
+    });
+</script>
+
+</body>
+</html>
