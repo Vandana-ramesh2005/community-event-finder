@@ -86,16 +86,16 @@ List the key features of your project:
 <img width="1867" height="842" alt="Image" src="https://github.com/user-attachments/assets/02e647f5-c10c-4894-a97c-40cb99f7bd31" />
 *The platform enables users to discover nearby events through location-based search, distance filtering, interactive map visualization, real-time GPS detection, and navigation support via Leaflet and Google Maps.*
 
-![docs/Screenshot 2026-02-20 214503.png]
+<img width="1856" height="863" alt="Image" src="https://github.com/user-attachments/assets/e0586afe-b632-496d-b19c-a3b1c8cad4f3" />
 *The platform allows registered users to add new events by entering event details and selecting the exact location on the map, which is then stored in the database through a Flask backend.*
 
-![docs/Screenshot 2026-02-20 214524.png](Add screenshot 3 here with proper name)
+<img width="1901" height="778" alt="Image" src="https://github.com/user-attachments/assets/7874e3e1-ed8b-4a8a-b895-795a503f0539" />
 *When a user clicks **“Interested,”** the system pins the event’s exact location on an interactive map using Leaflet and provides navigation directions via Google Maps.*
 
-![<docs/Screenshot 2026-02-20 214554.png>]
+<img width="1875" height="861" alt="Image" src="https://github.com/user-attachments/assets/f8e162ff-125d-481d-83f9-8841cda4458f" />
 *The system displays all available events and allows users to filter them based on their preferred location and selected distance radius to find nearby events.*
 
-![<docs/Screenshot 2026-02-20 214621.png>]
+<img width="1895" height="837" alt="Image" src="https://github.com/user-attachments/assets/4f0c8956-7cdf-4417-b2c9-2a2d18a48fab" />
 *The front page provides filtering options that allow users to select district, area, category, and distance to easily find events that match their preferences.*
 
 
