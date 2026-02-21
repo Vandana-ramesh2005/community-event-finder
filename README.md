@@ -83,7 +83,7 @@ List the key features of your project:
 
 #### Screenshots (Add at least 3)
 
-![docs/Screenshot 2026-02-20 214444.png]
+<img width="1867" height="842" alt="Image" src="https://github.com/user-attachments/assets/02e647f5-c10c-4894-a97c-40cb99f7bd31" />
 *The platform enables users to discover nearby events through location-based search, distance filtering, interactive map visualization, real-time GPS detection, and navigation support via Leaflet and Google Maps.*
 
 ![docs/Screenshot 2026-02-20 214503.png]
