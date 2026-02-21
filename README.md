@@ -83,10 +83,10 @@ List the key features of your project:
 
 #### Screenshots (Add at least 3)
 
-![docs/Screenshot 2026-02-20 214444.png](Add screenshot 1 here with proper name)
+![docs/Screenshot 2026-02-20 214444.png]
 *The platform enables users to discover nearby events through location-based search, distance filtering, interactive map visualization, real-time GPS detection, and navigation support via Leaflet and Google Maps.*
 
-![docs/Screenshot 2026-02-20 214503.png](Add screenshot 2 here with proper name)
+![docs/Screenshot 2026-02-20 214503.png]
 *The platform allows registered users to add new events by entering event details and selecting the exact location on the map, which is then stored in the database through a Flask backend.*
 
 ![docs/Screenshot 2026-02-20 214524.png](Add screenshot 3 here with proper name)
