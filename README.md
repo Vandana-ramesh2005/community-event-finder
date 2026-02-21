@@ -103,12 +103,12 @@ List the key features of your project:
 
 **System Architecture:**
 
-![Architecture Diagram](docs/WhatsApp Image 2026-02-21 at 10.04.50 AM.jpeg)
+![Image](https://github.com/user-attachments/assets/835de925-cd10-4665-b968-216ebf3e4baf)
 *Our system is a location-based event platform that follows a simple three-layer architecture: frontend, backend, and database. The frontend displays events on an interactive map using Leaflet.js, gets the user’s location through GPS, and allows users to search, filter, register, and add new events. It sends requests to the Flask backend, which handles user authentication, processes event data, and applies filtering logic. The backend communicates with the database to store and retrieve user and event information, and then sends the results back to the frontend in JSON format. Google Maps API is integrated for navigation. This structure ensures smooth communication between components and efficient event management.*
 
 **Application Workflow:**
 
-![Workflow](docs/WhatsApp Image 2026-02-21 at 10.11.29 AM.jpeg)
+![Image](https://github.com/user-attachments/assets/197ca24a-914b-46a5-9aed-cab3e63d6a90)
 *This flowchart shows the development process of the Community Event Finder, from planning and design to development, testing, and final deployment.*
 ---
 
@@ -124,7 +124,7 @@ List the key features of your project:
 
 #### Build Photos
 
-![docs/WhatsApp Image 2026-02-21 at 9.57.55 AM.jpeg]
+![Image](https://github.com/user-attachments/assets/a6254981-ce65-4e58-af4a-5f0f92ef2caa)
 
 ![Components](Add photo of your components here)
 *List out all components shown*
