@@ -2,27 +2,27 @@
   <img src="./img.png" alt="Project Banner" width="100%">
 </p>
 
-# [Project Name] 🎯
+# [Community Event Finder] 🎯
 
 ## Basic Details
 
-### Team Name: [Name]
+### Team Name: [Buggy]
 
 ### Team Members
-- Member 1: [Name] - [College]
-- Member 2: [Name] - [College]
+- Member 1: [Vandana Ramesh] - [College Of Engineering Attingal]
+- Member 2: [Nandhana Rajesh] - [College Of Engineering Attingal]
 
 ### Hosted Project Link
-[mention your project hosted link here]
+[https://community-event-finder.onrender.com/]
 
 ### Project Description
-[2-3 lines about what your project does]
+[Our project is a Community Event Finder web application designed to help users discover events happening nearby. The frontend provides filters for categories, places, districts, and time ranges, while the backend (running on Node.js) connects to APIs like Google Maps to fetch and display location‑based results. In short, it’s a location‑aware event discovery tool that combines search, mapping, and user interaction features.]
 
 ### The Problem statement
-[What problem are you solving?]
+[The problem your project is solving is that people often struggle to discover local events happening around them in real time. Information is scattered across social media, word of mouth, or fragmented platforms, making it difficult to know what’s happening nearby. Your Community Event Finder addresses this by providing a centralized, location‑aware tool where users can search by place, category, and radius to quickly find events in their area.]
 
 ### The Solution
-[How are you solving it?]
+[The solution you’re building is a Community Event Finder platform that centralizes event discovery into one accessible tool. You solve the problem by creating a web application with a frontend interface for searching and filtering events (by category, place, district, and time radius) and a backend service connected to APIs like Google Maps to provide location‑based results. By combining these, users can quickly find nearby events without relying on scattered sources, making event discovery simple, interactive, and reliable.]
 
 ---
 
@@ -31,10 +31,10 @@
 ### Technologies/Components Used
 
 **For Software:**
-- Languages used: [e.g., JavaScript, Python, Java]
-- Frameworks used: [e.g., React, Django, Spring Boot]
-- Libraries used: [e.g., axios, pandas, JUnit]
-- Tools used: [e.g., VS Code, Git, Docker]
+- Languages used: [Python, HTML, CSS, JavaScript]
+- Frameworks used: [Flask ]
+- Libraries used: [Leaflet, OpenStreetMap, Nominatim, hashlib, SQLite]
+- Tools used: [Browser Geolocation API, Google Maps, Haversine Formula, Google Fonts]
 
 **For Hardware:**
 - Main components: [List main components]
@@ -46,11 +46,11 @@
 ## Features
 
 List the key features of your project:
-- Feature 1: [Description]
-- Feature 2: [Description]
-- Feature 3: [Description]
-- Feature 4: [Description]
-
+- Feature 1: [Location based Event Search]
+- Feature 2: [Distance filtering using Haversine Formula]
+- Feature 3: [Route navigation via Google Maps]
+- Feature 4: [Multi level Filtering]
+- Feature 5: [Community Event Submission with map pinning]
 ---
 
 ## Implementation
@@ -59,12 +59,12 @@ List the key features of your project:
 
 #### Installation
 ```bash
-[Installation commands - e.g., npm install, pip install -r requirements.txt]
+[python -m venv venv, venv\Scripts\activate, pip install flask, python app.py]
 ```
 
 #### Run
 ```bash
-[Run commands - e.g., npm start, python app.py]
+[venv\Scripts\activate    , python app.py]
 ```
 
 ### For Hardware:
@@ -83,27 +83,33 @@ List the key features of your project:
 
 #### Screenshots (Add at least 3)
 
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+![docs/Screenshot 2026-02-20 214444.png](Add screenshot 1 here with proper name)
+*The platform enables users to discover nearby events through location-based search, distance filtering, interactive map visualization, real-time GPS detection, and navigation support via Leaflet and Google Maps.*
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
+![docs/Screenshot 2026-02-20 214503.png](Add screenshot 2 here with proper name)
+*The platform allows registered users to add new events by entering event details and selecting the exact location on the map, which is then stored in the database through a Flask backend.*
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+![docs/Screenshot 2026-02-20 214524.png](Add screenshot 3 here with proper name)
+*When a user clicks **“Interested,”** the system pins the event’s exact location on an interactive map using Leaflet and provides navigation directions via Google Maps.*
+
+![<docs/Screenshot 2026-02-20 214554.png>]
+*The system displays all available events and allows users to filter them based on their preferred location and selected distance radius to find nearby events.*
+
+![<docs/Screenshot 2026-02-20 214621.png>]
+*The front page provides filtering options that allow users to select district, area, category, and distance to easily find events that match their preferences.*
+
 
 #### Diagrams
 
 **System Architecture:**
 
-![Architecture Diagram](docs/architecture.png)
-*Explain your system architecture - components, data flow, tech stack interaction*
+![Architecture Diagram](docs/WhatsApp Image 2026-02-21 at 10.04.50 AM.jpeg)
+*Our system is a location-based event platform that follows a simple three-layer architecture: frontend, backend, and database. The frontend displays events on an interactive map using Leaflet.js, gets the user’s location through GPS, and allows users to search, filter, register, and add new events. It sends requests to the Flask backend, which handles user authentication, processes event data, and applies filtering logic. The backend communicates with the database to store and retrieve user and event information, and then sends the results back to the frontend in JSON format. Google Maps API is integrated for navigation. This structure ensures smooth communication between components and efficient event management.*
 
 **Application Workflow:**
 
-![Workflow](docs/workflow.png)
-*Add caption explaining your workflow*
-
+![Workflow](docs/WhatsApp Image 2026-02-21 at 10.11.29 AM.jpeg)
+*This flowchart shows the development process of the Community Event Finder, from planning and design to development, testing, and final deployment.*
 ---
 
 ### For Hardware:
@@ -118,7 +124,7 @@ List the key features of your project:
 
 #### Build Photos
 
-![Team](Add photo of your team here)
+![docs/WhatsApp Image 2026-02-21 at 9.57.55 AM.jpeg]
 
 ![Components](Add photo of your components here)
 *List out all components shown*
